@@ -1,0 +1,125 @@
+# Server Port
+# -----------
+server:
+  port: 8762
+
+# Discovery Service Settings
+# --------------------------
+eureka:
+  instance:
+    hostname: localhost
+    port: 8761
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${eureka.instance.port}/eureka
+  server:
+    enableSelfPreservation: true
+
+# Log settings
+# ------------
+logging:
+  level:
+    com.netflix: ERROR
+    org.springframework: ERROR
+
+# Routes configuration
+# --------------------
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: authentication-service
+          uri: lb://authentication-service
+          predicates:
+            - Path=/login/**,/validateToken/**
+          filters:
+            - RewritePath=/login/(?<path>.*), /login/$\{path}
+            - RewritePath=/validateToken/(?<path>.*), /validateToken/$\{path}
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - id: ecom-sales-service
+          uri: lb://ecom-sales-service
+          predicates:
+            - Path=/ecom-sales/**
+          filters:
+            - RewritePath=/ecom-sales/(?<path>.*), /ecom-sales/$\{path}
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - id: ecom-market-service
+          uri: lb://ecom-market-service
+          predicates:
+            - Path=/ecom-market/**
+          filters:
+            - RewritePath=/ecom-market/(?<path>.*), /ecom-market/$\{path}
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+        - id: ecom-auth-service
+          uri: lb://ecom-auth-service
+          predicates:
+            - Path=/ecom-auth/**
+          filters:
+            - RewritePath=/ecom-auth/(?<path>.*), /ecom-auth/$\{path}
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+            - GET
+            - PATCH
+            - PUT
+            - POST
+            - DELETE
+            - PATH
+            - OPTIONS
+            allowedHeaders:
+            - origin
+            - accept
+            - x-requested-with
+            - content-type
+            - access-control-request-method
+            - access-control-request-headers
+            - authorization
+            exposedHeaders:
+            - content-type
+            - content-disposition
+            allowCredentials: true
+            maxAge: 3600
+        addToSimpleUrlHandlerMapping: true
+
+# Increase the Hystrix timeout to 60s (globally)
+# ----------------------------------------------
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          strategy: THREAD
+          thread:
+            timeoutInMilliseconds: 180000
+  threadpool:
+    default:
+      coreSize: 50
+
+# Requests to the zuul proxy are routed through the Ribbon load balancer and will throw a timeout exception
+# if the response is not obtained within a couple of seconds. Increase the timeout values (as the login to AD
+# can potentially take several seconds.
+# -----------------------------------------------------------------------------------------------------------
+ribbon:
+  ConnectTimeout: 60000
+  ReadTimeout: 120000
+
+# Information that gets displayed in the spring admin UI
+# ------------------------------------------------------
+info:
+  app:
+    name: gateway-service
+    description: Gateway Service for application
+
