@@ -1,0 +1,111 @@
+server:
+  port: 9454
+
+# Discovery Service Settings
+# --------------------------
+eureka:
+  instance:
+    hostname: localhost
+    port: 8761
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${eureka.instance.port}/eureka
+  server:
+    enableSelfPreservation: true
+
+# Log settings
+# ------------
+logging:
+  level:
+    com.netflix: ERROR
+    org.springframework: ERROR
+    com.harik.inno: INFO
+
+# Database properties
+spring:
+  application:
+    name: ecom-sales-service
+  datasource:
+    driverClassName: ${DB_DRIVER_CLASS:org.postgresql.Driver}
+    platform: postgres
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:Test123$}
+    url: jdbc:postgresql://192.168.204.241:5432/ecomdb
+    initialization-mode: always
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    # set generate-ddl as false before pushing to production
+    generate-ddl: true
+    database-platform: org.hibernate.dialect.PostgreSQL9Dialect
+    properties:
+      hibernate:
+        default_schema: sales
+        # Set the ddl-auto to none before pushing to production.
+        ddl-auto: update
+        temp:
+          use_jdbc_metadata_defaults: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
+# API Documentation settings
+com.harik.configuration:
+  security:
+    cors:
+      headers:
+        allowed-origins: '*'
+        allowed-methods:
+          - OPTIONS
+          - POST
+          - GET
+          - PATCH
+          - PUT
+          - DELETE
+        allowed-headers:
+          - Origin
+          - Accept
+          - X-Requested-With
+          - Content-Type
+          - Access-Control-Request-Method
+          - Access-Control-Request-Headers
+          - Authorization
+        max-age: 3600
+        allow-credentials: true
+    endpoints:
+      unsecured:
+        - "/v3/api-docs/**"
+        - "/swagger-ui.html"
+        - "/swagger-ui/**"
+        - "/actuator/**"
+    auth:
+      token:
+        secret: isymphony
+        expiration-interval-in-hours: 168
+      validate-token-url:
+        url: http://localhost:8762/validateToken
+  api:
+    documentation:
+      title: ecom-sales-service
+      description: trailapp
+      # Update the license and licenseUrl.
+      license: GNU Lesser General Public License
+      licenseUrl: https://www.gnu.org/licenses/lgpl-3.0.en.html
+      version: 1.0.0
+      contact:
+        name: Admin
+        email: Admin
+      base-package: "com.harik.inno"
+      security-schema:
+        name: bearerAuth
+        scheme: bearer
+        type: HTTP
+        bearerFormat: JWT
+
+# Information that gets displayed in the spring admin UI
+# ------------------------------------------------------
+info:
+  app:
+    name: ${spring.application.name}
+    description: ${spring.application.name} for application
