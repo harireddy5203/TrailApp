@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+
+    # Service - ecomdb-db-server
+    ecomdb-db-server:
+        container_name: ecomdb-db-server
+        image: postgres:12.4
+        restart: always
+        ports:
+            - "5432:5432"
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=Test123$
+            - POSTGRES_DB=ecomdb
+
+# Service - ecom-sales-service
+    ecom-sales-service:
+        container_name: ecom-sales-service
+        image: img/ecom-sales-service:1.0.0
+        restart: always
+        ports:
+            - "8082:8082"
+        depends_on:
+            - ecomdb-db-server
+
+# Service - ecom-market-service
+    ecom-market-service:
+        container_name: ecom-market-service
+        image: img/ecom-market-service:1.0.0
+        restart: always
+        ports:
+            - "8082:8082"
+        depends_on:
+            - ecomdb-db-server
+
+# Service - ecom-auth-service
+    ecom-auth-service:
+        container_name: ecom-auth-service
+        image: img/ecom-auth-service:1.0.0
+        restart: always
+        ports:
+            - "8082:8082"
+        depends_on:
+            - ecomdb-db-server
+
+# Service - empdb-db-server
+    empdb-db-server:
+        container_name: empdb-db-server
+        image: postgres:12.4
+        restart: always
+        ports:
+            - "5432:5432"
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=Test123$
+            - POSTGRES_DB=empdb
+
+# Service - emp-hr-service
+    emp-hr-service:
+        container_name: emp-hr-service
+        image: img/emp-hr-service:1.0.0
+        restart: always
+        ports:
+            - "8082:8082"
+        depends_on:
+            - empdb-db-server
+
